@@ -1,224 +1,194 @@
 function createBoard() {
-    let gridDiv = document.querySelector(".grid");
-    for (let i = 0; i < 16; i++) {
-      let div = document.createElement("div");
-      div.setAttribute("id", `id_${i}`);
-      div.textContent = 0;
-      gridDiv.appendChild(div);
-    }
+  const gridContainer = document.querySelector(".grid");
+  for (let i = 0; i < 16; i++){
+      let tile = document.createElement('div');
+      tile.setAttribute('id', `id_${i}`);
+      tile.textContent = 0;
+      gridContainer.appendChild(tile);
   }
-  createBoard();
-  function generate() {
-    let numArray = [2, 2, 2, 2, 2, 2, 2, 2, 2, 4];
-    let num = numArray[Math.floor(Math.random() * numArray.length)];
-    let allBlocks = document.querySelectorAll(".grid > div");
-    let filterBLocks = [...allBlocks].filter((a) => a.textContent == 0);
-    if (filterBLocks.length == 0) {
+}
+createBoard();
+function generate(){
+  let numArray = [2,2,2,2,2,2,2,2,2,4];
+  let num = numArray[Math.floor(Math.random()*numArray.length)]
+  let allBlocks = document.querySelectorAll('.grid>div');
+  let filteredBlocks = [...allBlocks].filter((a) => a.textContent == 0);
+  if (filteredBlocks == 0){
       return;
-    }
-    let finalBlock =
-      filterBLocks[Math.floor(Math.random() * filterBLocks.length)];
-    finalBlock.textContent = num;
   }
-  generate();
-  function shiftArrayLeft(values) {
-    let finalarray = values.filter((a) => a != 0);
-    let index = finalarray.length;
-    while (index < 4) {
-      finalarray.push(0);
+  let finalBlock = filteredBlocks[Math.floor(Math.random()*filteredBlocks.length)]
+  finalBlock.textContent = num;
+}
+generate()
+function shiftArrayLeft(values){
+  let finalArray = values.filter((a) => a != 0)
+  let index = finalArray.length;
+  while (index < 4){
+      finalArray.push(0);
       index++;
-    }
-    return mergeTiles(finalarray);
   }
-  function shiftArrayRight(values) {
-    let finalarray = values.filter((a) => a != 0);
-    let index = finalarray.length;
-    while (index < 4) {
-      finalarray.unshift(0);
+  return finalArray;
+}
+function combineArrayLeft(values){
+  let index = 1;
+  while (index < 4){
+      if (values[index-1] == values[index]){
+          values[index-1] *= 2;
+          updateScore(values[index-1])
+          values[index] = 0;
+      }
       index++;
-    }
-    return mergeTiles(finalarray);
   }
-  function shiftArrayUp(values) {
-    let finalarray = values.filter((a) => a != 0);
-    let index = finalarray.length;
-    while (index < 4) {
-      finalarray.push(0);
+  return values;
+}
+function shiftArrayRight(values){
+  let finalArray = values.filter((a) => a != 0)
+  let index = finalArray.length;
+  while (index < 4){
+      finalArray.unshift(0);
       index++;
-    }
-    return mergeTiles(finalarray);
   }
-  function shiftArrayDown(values) {
-    let finalarray = values.filter((a) => a != 0);
-    let index = finalarray.length;
-    while (index < 4) {
-      finalarray.unshift(0);
-      index++;
-    }
-    return mergeTiles(finalarray);
+  return finalArray;
+}
+function combineArrayRight(values){
+  let index = values.length-1;
+  while (index > 0){
+      if (values[index] == values[index-1]){
+          values[index] *= 2;
+          updateScore(values[index])
+          values[index-1] = 0;
+      }
+      index--;
   }
-  function shiftRow(rowNumber, direction) {
-    let rowValues = [];
-    for (let i = 4 * (rowNumber - 1); i < 4 * rowNumber; i++) {
-      rowValues.push(
-        parseInt(document.querySelector(`#id_${i}`).textContent, 10)
-      );
-    }
-    if (direction === "L") {
+  return values;
+}
+function shiftRow(rowNumber, direction){
+  let rowValues = [];
+  for (let i = 4*(rowNumber-1); i < 4*rowNumber; i++){
+      rowValues.push(document.querySelector(`#id_${i}`).textContent)
+  }
+  if (direction == "L"){
       rowValues = shiftArrayLeft(rowValues);
-    } else if (direction === "R") {
+      rowValues = combineArrayLeft(rowValues);
+      rowValues = shiftArrayLeft(rowValues);
+  }
+  else if (direction == "R"){
       rowValues = shiftArrayRight(rowValues);
-    }
-    for (let i = (rowNumber - 1) * 4; i < 4 * rowNumber; i++) {
-      document.querySelector(`#id_${i}`).textContent = rowValues[i % 4];
-    }
+      rowValues = combineArrayRight(rowValues);
+      rowValues = shiftArrayRight(rowValues);
   }
-  function shiftColumn(columnNumber, direction) {
-    let columnValues = [];
-    for (let i = columnNumber - 1; i < 16; i += 4) {
-      columnValues.push(
-        parseInt(document.querySelector(`#id_${i}`).textContent, 10)
-      );
-    }
-    if (direction === "U") {
-      columnValues = shiftArrayUp(columnValues);
-    } else if (direction === "D") {
-      columnValues = shiftArrayDown(columnValues);
-    }
-    for (let i = columnNumber - 1, j = 0; i < 16; i += 4, j++) {
-      document.querySelector(`#id_${i}`).textContent = columnValues[j];
-    }
+  for (let i = 4*(rowNumber-1); i < 4*rowNumber; i++){
+      document.querySelector(`#id_${i}`).textContent = rowValues[i%4];
   }
-  function shiftLeft() {
-    for (let row = 1; row <= 4; row++) {
-      shiftRow(row, "L");
-    }
+}
+function shiftLeft(){
+  shiftRow(1, "L");
+  shiftRow(2, "L");
+  shiftRow(3, "L");
+  shiftRow(4, "L");
+}
+function shiftRight(){
+  shiftRow(1, "R");
+  shiftRow(2, "R");
+  shiftRow(3, "R");
+  shiftRow(4, "R");
+}
+function shiftColumn(columnNumber, direction){
+  let columnValues = [];
+  for (let i = (columnNumber-1); i < 16; i+= 4){
+      columnValues.push(document.querySelector(`#id_${i}`).textContent)
   }
-  function shiftRight() {
-    for (let row = 1; row <= 4; row++) {
-      shiftRow(row, "R");
-    }
+  if (direction == "U"){
+      columnValues = shiftArrayLeft(columnValues);
+      columnValues = combineArrayLeft(columnValues);
+      columnValues = shiftArrayLeft(columnValues);
   }
-  function shiftUp() {
-    for (let column = 1; column <= 4; column++) {
-      shiftColumn(column, "U");
-    }
+  else if (direction == "D"){
+      columnValues = shiftArrayRight(columnValues);
+      columnValues = combineArrayRight(columnValues);
+      columnValues = shiftArrayRight(columnValues);
   }
-  function shiftDown() {
-    for (let column = 1; column <= 4; column++) {
-      shiftColumn(column, "D");
-    }
+  let counter = 0;
+  for (let i = (columnNumber-1); i < 16; i+= 4){
+      document.querySelector(`#id_${i}`).textContent = columnValues[counter];
+      counter++;
   }
-  function mergeTiles(rowValues) {
-    for (let i = 0; i < rowValues.length - 1; i++) {
-      if (rowValues[i] === rowValues[i + 1]) {
-        rowValues[i] *= 2;
-        rowValues[i + 1] = 0;
-        updateScore(rowValues[i]);
-      }
-    }
-    return rowValues;
-  }
-  function updateScore(mergedValue) {
-    let scoreElement = document.getElementById("score");
-    let newScore = parseInt(scoreElement.textContent, 10) + mergedValue;
-    scoreElement.textContent = newScore;
-  }
-  function handleKeyPress(event) {
-    const keyCode = event.keyCode;
-    let direction;
-    switch (keyCode) {
-      case 37:
-        direction = "L";
-        break;
-      case 38:
-        direction = "U";
-        break;
-      case 39:
-        direction = "R";
-        break;
-      case 40:
-        direction = "D";
-        break;
-      default:
-        return;
-    }
-    switch (direction) {
-      case "L":
-        shiftLeft();
-        break;
-      case "U":
-        shiftUp();
-        break;
-      case "R":
-        shiftRight();
-        break;
-      case "D":
-        shiftDown();
-        break;
-    }
-    if (checkForWin()) {
-      document.querySelector("#result").textContent = "YOU WIN!";
-      document.removeEventListener("keyup", handleKeyPress)}
-    else if (isGameOver()) {
-      document.querySelector("#result").textContent = "Game Over";
-      document.removeEventListener("keyup", handleKeyPress);
-    }
-    else {
-      generate();
-    }}
-  document.addEventListener("keyup", handleKeyPress);
-  function isGameOver() {
-    let allBlocks = document.querySelectorAll(".grid > div");
-    let emptySquares = Array.from(allBlocks).filter(
-      (block) => block.textContent == 0
-    );
-    if (emptySquares.length == 0) {
-      return true;
-    }
-    for (let i = 0; i < 16; i++) {
-      let currentBlock = document.querySelector(`#id_${i}`);
-      let currentValue = parseInt(currentBlock.textContent, 10);
-      if (i % 4 !== 3) {
-        let rightValue = parseInt(
-          document.querySelector(`#id_${i + 1}`).textContent,
-          10
-        );
-        if (currentValue === rightValue) {
+}
+function shiftUp(){
+  shiftColumn(1, "U");
+  shiftColumn(2, "U");
+  shiftColumn(3, "U");
+  shiftColumn(4, "U");
+}
+function shiftDown(){
+  shiftColumn(1, "D");
+  shiftColumn(2, "D");
+  shiftColumn(3, "D");
+  shiftColumn(4, "D");
+}
+function isGameOver(){
+  for (let i = 0; i < 16; i++){
+      let currentTile = parseInt(document.querySelector(`#id_${i}`).textContent);
+      if (currentTile === 0){
           return false;
-        }
       }
-      if (i < 12) {
-        let downValue = parseInt(
-          document.querySelector(`#id_${i + 4}`).textContent,
-          10
-        );
-        if (currentValue === downValue) {
+      else if (i % 4 !== 3 && currentTile === parseInt(document.querySelector(`#id_${i+1}`).textContent)){
           return false;
-        }
       }
-    }
-    return true;
-  }
-  function checkForWin() {
-    for (let i = 0; i < 16; i++) {
-      let currentBlock = document.querySelector(`#id_${i}`);
-      let currentValue = parseInt(currentBlock.textContent, 10);
-      if (currentValue === 2048) {
-        return true;
+      else if (i < 12 && currentTile === parseInt(document.querySelector(`#id_${i+4}`).textContent)){
+          return false;
       }
-    }
-    return false;
   }
-  function restartGame() {
-    let allBlocks = document.querySelectorAll(".grid > div");
-    allBlocks.forEach((block) => {
-      block.textContent = 0;
-    });
-    let scoreElement = document.getElementById("score");
-    scoreElement.textContent = 0;
-    document.querySelector("#result").textContent = "Join the numbers and get to the 2048 tile!";
-    createBoard();
-    document.addEventListener("keyup", handleKeyPress);
+  return true;
+}
+function checkForWin(){
+  const allTiles = document.querySelectorAll('.grid > div');
+  for (let tile of allTiles){
+      if (tile.textContent == "2048"){
+          document.getElementById('result').textContent = "YOU WIN";
+          return true;
+      }
   }
-  restartGame();
+  return false;
+}
+let score = 0;
+function restartGame(){
+  const allTiles = document.querySelectorAll('.grid > div');
+  allTiles.forEach(tile => tile.textContent = 0);
+  score = 0;
+  document.getElementById('score').textContent = score;
+  document.getElementById('result').textContent = "Join the numbers and get to the 2048 tile!";
+  generate();
+  generate();
+  document.body.addEventListener('keyup', keyUpHandle);
+}
+document.getElementById('restart-button').addEventListener('click', restartGame);
+function updateScore(tileValue){
+  let currentScore = parseInt(document.getElementById('score').textContent);
+  document.getElementById('score').textContent = currentScore + tileValue;
+}
+function keyUpHandle(event){
+      switch (event.keyCode){
+          case 37:
+              shiftLeft();
+              break;
+          case 38:
+              shiftUp();
+              break;
+          case 39:
+              shiftRight();
+              break;
+          case 40:
+              shiftDown();
+              break;
+      }
+  generate();
+  if (isGameOver()){
+      document.getElementById('result').textContent= "Game Over!";
+      document.body.removeEventListener('keyup', keyUpHandle);
+  }
+  if (checkForWin()){
+      document.body.removeEventListener('keyup', keyUpHandle);
+  }
+}
+document.body.addEventListener('keyup', keyUpHandle)
